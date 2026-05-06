@@ -155,33 +155,28 @@ function Nav() {
       borderBottom: `1px solid ${IM.mist}`,
     }}>
       <div className="im-nav-inner">
-        <a href="#top" style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8, textDecoration: 'none' }}>
-          <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 26, width: 'auto', display: 'block', alignSelf: 'center' }} />
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            alignSelf: 'center',
-            height: 18, padding: '0 7px', boxSizing: 'border-box',
-            fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-            lineHeight: 1,
-            color: IM.blueDeep, background: IM.ice, borderRadius: 5,
-            border: `1px solid ${IM.blue}40`,
-            transform: 'translateY(3px)',
-          }}>OS</span>
-        </a>
-        <nav className="im-nav-links" style={{ minWidth: 0 }}>
-          {[
-            { l: 'Platform', href: '#platform' },
-            { l: 'Products', href: '#products' },
-            { l: 'Why an OS', href: '#why-os' },
-            { l: 'Investors', href: '#investors' },
-          ].map(n => (
-            <a key={n.l} href={n.href} style={{
-              fontSize: 14, color: IM.slate, textDecoration: 'none', fontWeight: 500,
-            }}>{n.l}</a>
-          ))}
-        </nav>
-        <a href="#investors" className="im-nav-investor">Investor deck</a>
-        <AudienceDropdown open={open} setOpen={setOpen} />
+        <div className="im-nav-left">
+          <a href="#top" className="im-brand" style={{ textDecoration: 'none' }}>
+            <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 26, width: 'auto', display: 'block' }} />
+            <span className="im-brand-pill">OS</span>
+          </a>
+          <nav className="im-nav-links" style={{ minWidth: 0 }}>
+            {[
+              { l: 'Platform', href: '#platform' },
+              { l: 'Products', href: '#products' },
+              { l: 'Why an OS', href: '#why-os' },
+              { l: 'Investors', href: '#investors' },
+            ].map(n => (
+              <a key={n.l} href={n.href} style={{
+                fontSize: 14, color: IM.slate, textDecoration: 'none', fontWeight: 500,
+              }}>{n.l}</a>
+            ))}
+          </nav>
+        </div>
+        <div className="im-nav-right">
+          <a href="#investors" className="im-nav-investor">Investor deck</a>
+          <AudienceDropdown open={open} setOpen={setOpen} />
+        </div>
       </div>
     </header>
   );

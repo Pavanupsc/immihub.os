@@ -240,8 +240,28 @@ h4, .h4   { font-size: var(--fs-h4);      line-height: var(--lh-h4);      font-w
 .im-hero-shot { position: relative; min-height: 540px; }
 
 /* Nav */
-.im-nav-inner { max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; gap: 24px; min-width: 0; }
-.im-nav-links { display: flex; gap: 22px; flex: 1; margin-left: 24px; }
+.im-nav-inner { max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; }
+.im-nav-left { display: flex; align-items: center; gap: 24px; flex: 1; min-width: 0; }
+.im-nav-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.im-brand { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.im-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--im-blue-deep);
+  background: var(--im-blue-ice);
+  border-radius: 5px;
+  border: 1px solid rgba(79, 158, 214, 0.25);
+}
+.im-nav-links { display: flex; gap: 22px; min-width: 0; }
 .im-nav-investor { font-size: 14px; color: var(--im-blue-deep); text-decoration: none; font-weight: 500; }
 
 /* Section padding */
@@ -296,7 +316,7 @@ h4, .h4   { font-size: var(--fs-h4);      line-height: var(--lh-h4);      font-w
 
   .im-os-surfaces { grid-template-columns: repeat(2, 1fr); }
 
-  .im-nav-links { gap: 14px; margin-left: 12px; }
+  .im-nav-links { gap: 14px; }
   .im-nav-links a { font-size: 13px; }
   .im-nav-investor { display: none; }
 
@@ -311,8 +331,7 @@ h4, .h4   { font-size: var(--fs-h4);      line-height: var(--lh-h4);      font-w
   .im-section-pad { padding: 64px 24px; }
   .im-hero-pad { padding: 48px 24px 48px; }
   .im-nav-inner { padding: 14px 20px; gap: 12px; }
-  .im-nav-inner { flex-wrap: wrap; }
-  .im-nav-inner > * { min-width: 0; max-width: 100%; }
+  .im-nav-left { gap: 16px; }
 
   .im-investor-card { padding: 40px 32px; border-radius: 22px; }
 }
