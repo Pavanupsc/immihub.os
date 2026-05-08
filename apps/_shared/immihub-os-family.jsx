@@ -94,6 +94,9 @@ function ImmiHubOSFamily({ homeHref = '../../index.html', umbrella = false }) {
         @media (max-width: 760px) {
           .immi-os-family-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
+        @media (max-width: 420px) {
+          .immi-os-family-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );

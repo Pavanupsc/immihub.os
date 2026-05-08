@@ -5,8 +5,8 @@ function LandingHero() {
   return (
     <section style={{ padding: '72px 0 48px', position: 'relative', overflow: 'hidden' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '0.9fr 1.25fr', gap: 72, alignItems: 'center' }}>
-          <div>
+        <div className="landing-hero-grid">
+          <div style={{ minWidth: 0 }}>
             <div className="eyebrow"><span className="dot" />ImmiHub for Employers · Coming 2027</div>
             <h1 className="display-xl" style={{ marginTop: 20, marginBottom: 22 }}>
               Immigration compliance,<br/>finally in one place.
@@ -27,9 +27,9 @@ function LandingHero() {
               Join 280+ HR and immigration teams on the waitlist.
             </div>
           </div>
-          <div style={{ position: 'relative' }}>
+          <div className="landing-hero-visual">
             {/* Hero product shot — tilted, original design */}
-            <div style={{ transform: 'perspective(1800px) rotateY(-3deg) rotateX(2deg)', transformOrigin: 'left center' }}>
+            <div className="landing-hero-visual-inner">
               <div className="prod-window" style={{ borderRadius: 14, boxShadow: '0 40px 80px -20px rgba(26,35,50,0.22)' }}>
                 <div className="prod-window-bar">
                   <div className="dot" /><div className="dot" /><div className="dot" />
@@ -39,7 +39,7 @@ function LandingHero() {
               </div>
             </div>
             {/* Floating notification card */}
-            <div style={{ position: 'absolute', right: -18, top: 72, width: 208 }}>
+            <div className="landing-hero-float">
               <div className="prod-window" style={{ borderRadius: 10, boxShadow: '0 24px 50px -14px rgba(26,35,50,0.28)' }}>
                 <div style={{ padding: 12, background: '#fff' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -70,7 +70,7 @@ function ProblemBand() {
   return (
     <section className="section-alt" style={{ padding: '80px 0' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}>
+        <div className="problem-band-grid">
           {items.map((it, i) => (
             <div key={i} style={{ padding: '12px 32px', borderLeft: i ? '1px solid var(--im-mist)' : 'none' }}>
               <div className="serif-display" style={{ fontSize: 'clamp(52px, 5vw, 80px)', color: PS.charcoal, lineHeight: 1 }}>{it.n}</div>
@@ -134,7 +134,7 @@ function FeatureGrid() {
             One surface for the whole immigration program.
           </h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+        <div className="feature-grid-3">
           {items.map((it, i) => (
             <div key={i} className="card" style={{ padding: 28, display: 'flex', flexDirection: 'column' }}>
               <div style={{ width: 40, height: 40, borderRadius: 10, background: PS.ice, color: PS.blueDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
@@ -173,7 +173,7 @@ function ProductGlimpse() {
             Seven screens, one source of truth.
           </h2>
         </div>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', padding: 6, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, marginBottom: 20 }}>
+        <div className="product-glimpse-tabs">
           {tabs.map(t => (
             <button
               key={t.k}
@@ -231,7 +231,7 @@ function WhoUsesIt() {
           <div className="eyebrow"><span className="dot" />Who uses it</div>
           <h2 className="section-title" style={{ marginTop: 16 }}>Three workflows. One shared source of truth.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+        <div className="who-uses-grid">
           {cols.map((c, i) => (
             <div key={i} style={{ borderTop: `2px solid ${PS.blue}`, paddingTop: 24 }}>
               <div style={{ width: 36, height: 36, borderRadius: 9, background: PS.ice, color: PS.blueDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
@@ -262,15 +262,15 @@ function SecurityCard() {
   return (
     <section style={{ padding: '48px 0 96px' }}>
       <div className="container">
-        <div className="card" style={{ padding: 40, display: 'flex', gap: 40, position: 'relative', overflow: 'hidden' }}>
+        <div className="card security-split" style={{ padding: 40, display: 'flex', gap: 40, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: PS.blue }} />
-          <div style={{ flex: '0 0 220px' }}>
+          <div className="security-split-aside">
             <div style={{ width: 40, height: 40, borderRadius: 10, background: PS.ice, color: PS.blueDeep, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l9 4v6c0 5-4 9-9 10-5-1-9-5-9-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
             </div>
             <div className="serif" style={{ fontSize: 24, color: PS.charcoal, letterSpacing: -0.01 * 24, lineHeight: 1.2 }}>Security and trust, by design.</div>
           </div>
-          <ul style={{ flex: 1, listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 32px' }}>
+          <ul className="security-split-list">
             {items.map((s, i) => (
               <li key={i} style={{ fontSize: 14, color: PS.slate, lineHeight: 1.5, display: 'flex', gap: 10 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={PS.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 4 }}><path d="M20 6L9 17l-5-5"/></svg>

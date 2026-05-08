@@ -6,11 +6,17 @@ const { useState, useEffect, useRef } = React;
 // ================ NAV ================
 function Nav({ active }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth > 900) setMenuOpen(false); };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const links = [
@@ -23,14 +29,36 @@ function Nav({ active }) {
   return (
     <nav className={'nav' + (scrolled ? ' scrolled' : '')}>
       <div className="nav-inner">
-        <a className="nav-logo" href="index.html" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, lineHeight: 1 }}>
-          <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 20, width: 'auto', display: 'block' }} />
+        <a className="nav-logo" href="index.html" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, lineHeight: 1, minWidth: 0 }}>
+          <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 20, width: 'auto', display: 'block', maxWidth: '100%' }} />
           <span style={{ fontFamily: 'Source Serif 4, Georgia, serif', fontSize: 12, fontStyle: 'italic', color: 'var(--im-slate)', paddingLeft: 2, whiteSpace: 'nowrap' }}>for Employers</span>
         </a>
         <div className="nav-links">
           {links.map(l => (
             <a key={l.k} href={l.href} className={'nav-link' + (active === l.k ? ' active' : '')}>{l.label}</a>
           ))}
+        </div>
+        <button
+          type="button"
+          className="nav-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="employer-nav-drawer"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen(o => !o)}
+        >
+          {menuOpen ? '×' : '☰'}
+        </button>
+        <div id="employer-nav-drawer" className={'nav-drawer' + (menuOpen ? ' is-open' : '')}>
+          {links.map(l => (
+            <a
+              key={l.k}
+              href={l.href}
+              onClick={() => setMenuOpen(false)}
+              className={'nav-link' + (active === l.k ? ' active' : '')}
+              style={{ textDecoration: 'none' }}
+            >{l.label}</a>
+          ))}
+          <a className="btn btn-primary btn-sm" href="#waitlist" onClick={() => setMenuOpen(false)}>Join the waitlist</a>
         </div>
         <div className="nav-right">
           <a className="btn btn-primary btn-sm" href="#waitlist">Join the waitlist</a>
@@ -122,8 +150,8 @@ function WaitlistForm({ tag = 'employer', compact = false, onSuccess }) {
   }
 
   return (
-    <form onSubmit={submit} noValidate style={{ display: 'grid', gap: 14 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: compact ? '1fr 1fr' : '1fr 1fr', gap: 14 }}>
+    <form onSubmit={submit} noValidate className="waitlist-form" style={{ display: 'grid', gap: 14 }}>
+      <div className="waitlist-form-row-2" style={{ display: 'grid', gridTemplateColumns: compact ? '1fr 1fr' : '1fr 1fr', gap: 14 }}>
         <div className="field">
           <label>Work email</label>
           <input
@@ -146,7 +174,7 @@ function WaitlistForm({ tag = 'employer', compact = false, onSuccess }) {
           {errors.company && <div className="field-error">{errors.company}</div>}
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div className="waitlist-form-row-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div className="field">
           <label>Role</label>
           <select className={'select' + (errors.role ? ' error' : '')} value={state.role} onChange={e => setState({ ...state, role: e.target.value })}>

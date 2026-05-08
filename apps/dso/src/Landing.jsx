@@ -30,7 +30,7 @@ function Landing() {
 
       {/* 1.1 HERO */}
       <section className="hero">
-        <div className="container-wide" style={{display:'grid', gridTemplateColumns: '1fr 1.4fr', gap: 56, alignItems:'center'}}>
+        <div className="container-wide dso-hero-grid">
           <div>
             <div className="eyebrow">ImmiHub for Institutions · Coming 2026</div>
             <h1>International student compliance,<br/>without the spreadsheets.</h1>
@@ -117,7 +117,7 @@ function Landing() {
               <button key={id} className={`tab-btn ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>{label}</button>
             ))}
           </div>
-          <div className="product-shot" style={{minHeight: 600}}>
+          <div className="product-shot product-shot--tall">
             <Mockup kind={tab} />
           </div>
           <p style={{marginTop: 16, fontFamily:'var(--font-serif)', fontStyle:'italic', fontSize: 15, color:'var(--fg-3)', maxWidth: 720}}>

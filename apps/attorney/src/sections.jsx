@@ -3,9 +3,36 @@
 
 const { useState, useEffect, useRef } = React;
 
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
+
 /* ─────────────────────── NAV ─────────────────────── */
 function Nav({ accent }) {
   const A = accentColor(accent);
+  const narrow = useMediaQuery('(max-width: 900px)');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navLinks = [
+    ['The moat', '#moat'],
+    ['Product', '#product'],
+    ['Compare', '#compare'],
+    ['Pricing', '#pricing'],
+    ['Security', '#security'],
+    ['FAQ', '#faq'],
+  ];
+  useEffect(() => {
+    if (!narrow) setMenuOpen(false);
+  }, [narrow]);
   return (
     <div style={{
       position: 'sticky', top: 0, zIndex: 20,
@@ -13,29 +40,77 @@ function Nav({ accent }) {
       WebkitBackdropFilter: 'blur(12px)', borderBottom: `1px solid ${T.mist}`,
     }}>
       <div style={{
-        maxWidth: 1200, margin: '0 auto', padding: '14px 32px',
-        display: 'flex', alignItems: 'center', gap: 32,
+        maxWidth: 1200, margin: '0 auto', padding: narrow ? '12px 16px' : '14px 32px',
+        display: 'flex', alignItems: 'center', gap: narrow ? 12 : 32,
+        flexWrap: 'wrap', rowGap: 12,
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, lineHeight: 1 }}>
-          <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 24 }} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.gray, paddingLeft: 2 }}>For attorneys</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, flex: narrow ? '1 1 100%' : '0 0 auto', minWidth: 0,
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, lineHeight: 1, minWidth: 0 }}>
+            <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: narrow ? 22 : 24, maxWidth: '100%' }} />
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: T.gray, paddingLeft: 2 }}>For attorneys</span>
+          </div>
+          {narrow && (
+            <button
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="attorney-nav-menu"
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              onClick={() => setMenuOpen(o => !o)}
+              style={{
+                flexShrink: 0,
+                width: 44, height: 44, borderRadius: 10, border: `1px solid ${T.mist}`,
+                background: '#fff', cursor: 'pointer', display: 'inline-flex',
+                alignItems: 'center', justifyContent: 'center', fontSize: 20, color: T.charcoal,
+              }}
+            >
+              {menuOpen ? '×' : '☰'}
+            </button>
+          )}
         </div>
-        <div style={{ display: 'flex', gap: 24, flex: 1, marginLeft: 20 }}>
-          {[
-            ['The moat', '#moat'],
-            ['Product', '#product'],
-            ['Compare', '#compare'],
-            ['Pricing', '#pricing'],
-            ['Security', '#security'],
-            ['FAQ', '#faq'],
-          ].map(([l,h]) => (
-            <a key={l} href={h} style={{ fontSize: 13.5, color: T.slate, fontWeight: 500 }}>{l}</a>
-          ))}
-        </div>
-        <a href="#waitlist" style={{
-          background: A.primary, color: '#fff',
-          padding: '9px 16px', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
-        }}>Join the waitlist →</a>
+        {!narrow && (
+          <div style={{ display: 'flex', gap: 24, flex: 1, marginLeft: 20, flexWrap: 'wrap', minWidth: 0 }}>
+            {navLinks.map(([l, h]) => (
+              <a key={l} href={h} style={{ fontSize: 13.5, color: T.slate, fontWeight: 500, whiteSpace: 'nowrap' }}>{l}</a>
+            ))}
+          </div>
+        )}
+        {!narrow && (
+          <a href="#waitlist" style={{
+            flexShrink: 0,
+            background: A.primary, color: '#fff',
+            padding: '9px 16px', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
+          }}>Join the waitlist →</a>
+        )}
+        {narrow && menuOpen && (
+          <div
+            id="attorney-nav-menu"
+            style={{
+              width: '100%', display: 'flex', flexDirection: 'column', gap: 4,
+              paddingTop: 12, marginTop: 4, borderTop: `1px solid ${T.mist}`,
+            }}
+          >
+            {navLinks.map(([l, h]) => (
+              <a
+                key={l}
+                href={h}
+                onClick={() => setMenuOpen(false)}
+                style={{ fontSize: 15, color: T.charcoal, fontWeight: 500, padding: '12px 10px', borderRadius: 8 }}
+              >{l}</a>
+            ))}
+            <a
+              href="#waitlist"
+              onClick={() => setMenuOpen(false)}
+              style={{
+                marginTop: 8, textAlign: 'center',
+                background: A.primary, color: '#fff',
+                padding: '12px 16px', borderRadius: 8, fontSize: 14, fontWeight: 600,
+              }}
+            >Join the waitlist →</a>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -44,34 +119,42 @@ function Nav({ accent }) {
 /* ─────────────────────── HERO ─────────────────────── */
 function Hero({ accent, heroShot }) {
   const A = accentColor(accent);
+  const narrow = useMediaQuery('(max-width: 900px)');
   const Shot = heroShot === 'rfe' ? RfeShot : heroShot === 'cases' ? CasesShot : DashboardShot;
   const url = heroShot === 'rfe'
     ? 'attorneys.immihub.com/cases/hassan/rfe'
     : heroShot === 'cases'
     ? 'attorneys.immihub.com/cases'
     : 'attorneys.immihub.com/dashboard';
+  const floatBase = {
+    background: '#fff', padding: '12px 16px', borderRadius: 12,
+    border: `1px solid ${T.mist}`, boxShadow: T.shadow.lg,
+    maxWidth: narrow ? '100%' : 260,
+    width: narrow ? '100%' : undefined,
+    boxSizing: 'border-box',
+  };
   return (
-    <div style={{ padding: '80px 32px 60px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 40 }}>
-        <div style={{ maxWidth: 900 }}>
+    <div style={{ padding: narrow ? '48px 16px 40px' : '80px 32px 60px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: narrow ? 28 : 40, minWidth: 0 }}>
+        <div style={{ maxWidth: 900, minWidth: 0 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: '#fff', color: T.slate,
             padding: '6px 12px', borderRadius: 999, fontSize: 12, fontWeight: 500,
-            border: `1px solid ${T.mist}`,
+            border: `1px solid ${T.mist}`, maxWidth: '100%', flexWrap: 'wrap',
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: 999, background: A.primary }} />
+            <span style={{ width: 6, height: 6, borderRadius: 999, background: A.primary, flexShrink: 0 }} />
             Pre-launch · Waitlist open for founding firms
           </div>
           <h1 className="serif" style={{
-            fontSize: 76, fontWeight: 500, color: T.charcoal,
+            fontSize: 'clamp(36px, 9vw, 76px)', fontWeight: 500, color: T.charcoal,
             letterSpacing: '-0.03em', lineHeight: 1.02,
-            margin: '28px 0 0',
+            margin: '28px 0 0', wordBreak: 'break-word',
           }}>
             Cases that arrive<br/>
             <span style={{ fontStyle: 'italic', fontWeight: 400, color: T.slate }}>pre-organized.</span>
           </h1>
-          <p style={{ fontSize: 20, color: T.slate, lineHeight: 1.5, maxWidth: 680, margin: '28px 0 0', fontWeight: 400 }}>
+          <p style={{ fontSize: narrow ? 17 : 20, color: T.slate, lineHeight: 1.5, maxWidth: 680, margin: '28px 0 0', fontWeight: 400 }}>
             A practice-management platform for US immigration attorneys — where new matters walk in the door with passports, petition data, I-20s, and receipt notices already sorted by source. You spend time on legal judgment, not intake.
           </p>
 
@@ -85,7 +168,7 @@ function Hero({ accent, heroShot }) {
               background: '#fff', color: T.charcoal, border: `1px solid ${T.mist}`,
               padding: '13px 22px', borderRadius: 10, fontSize: 15, fontWeight: 500,
             }}>See how a matter arrives →</a>
-            <div style={{ fontSize: 12, color: T.gray, marginLeft: 12 }}>
+            <div style={{ fontSize: 12, color: T.gray, marginLeft: narrow ? 0 : 12, width: narrow ? '100%' : undefined }}>
               No credit card · Founding-firm pricing locked for 2 years
             </div>
           </div>
@@ -105,19 +188,20 @@ function Hero({ accent, heroShot }) {
         </div>
 
         {/* Big browser shot */}
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', minWidth: 0, width: '100%' }}>
           <BrowserChrome url={url}>
-            <div style={{ height: 560, overflow: 'hidden' }}>
+            <div style={{ height: narrow ? 340 : 560, overflow: 'hidden' }}>
               <Shot />
             </div>
           </BrowserChrome>
 
           {/* Floating callout */}
           <div style={{
-            position: 'absolute', right: -12, top: 120,
-            background: '#fff', padding: '12px 16px', borderRadius: 12,
-            border: `1px solid ${T.mist}`, boxShadow: T.shadow.lg,
-            maxWidth: 260,
+            ...floatBase,
+            position: narrow ? 'relative' : 'absolute',
+            right: narrow ? undefined : -12,
+            top: narrow ? undefined : 120,
+            marginTop: narrow ? 16 : undefined,
           }}>
             <div className="label" style={{ color: T.blueDeep }}>ImmiHub Incoming</div>
             <div style={{ fontSize: 13, color: T.charcoal, marginTop: 6, lineHeight: 1.45 }}>
@@ -126,10 +210,12 @@ function Hero({ accent, heroShot }) {
           </div>
 
           <div style={{
-            position: 'absolute', left: -16, bottom: 60,
-            background: '#fff', padding: '12px 16px', borderRadius: 12,
-            border: `1px solid ${T.mist}`, boxShadow: T.shadow.lg,
-            maxWidth: 240,
+            ...floatBase,
+            maxWidth: narrow ? '100%' : 240,
+            position: narrow ? 'relative' : 'absolute',
+            left: narrow ? undefined : -16,
+            bottom: narrow ? undefined : 60,
+            marginTop: narrow ? 12 : undefined,
           }}>
             <div className="label" style={{ color: '#8A6200' }}>USCIS inbox</div>
             <div style={{ fontSize: 13, color: T.charcoal, marginTop: 6, lineHeight: 1.45 }}>
@@ -144,17 +230,48 @@ function Hero({ accent, heroShot }) {
 
 /* ─────────────────── MOAT DIAGRAM ─────────────────── */
 function MoatSection() {
+  const narrow = useMediaQuery('(max-width: 900px)');
   const sources = [
     { src: 'consumer', name: 'Consumer app',     who: 'The beneficiary',           brings: ['Passports · I-94s · EADs', 'Pay stubs · credentials', 'Identity documents'] },
     { src: 'employer', name: 'Employer Dashboard', who: 'The sponsoring employer', brings: ['Signed I-129s · LCAs', 'I-797s · org charts', 'Worksite + role data'] },
     { src: 'dso',      name: 'DSO Portal',        who: 'The university ISSS',      brings: ['I-20s · SEVIS records', 'CPT / OPT authorizations', 'Travel signatures'] },
   ];
+  const attorneyCard = (
+    <div style={{
+      background: T.charcoal, color: '#fff',
+      borderRadius: 14, padding: narrow ? '24px 20px' : '32px 28px',
+      display: 'flex', flexDirection: 'column', gap: 12,
+      boxShadow: T.shadow.md,
+      minWidth: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <img src="assets/logo-immihub.png" alt="" style={{ height: 20, filter: 'brightness(0) invert(1)' }} />
+        <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#A3B0C0' }}>Attorney Portal</span>
+      </div>
+      <div className="serif" style={{ fontSize: narrow ? 22 : 26, lineHeight: 1.15, letterSpacing: '-0.02em', color: '#fff', margin: '6px 0 4px' }}>
+        A new matter walks in the door with the evidence already sorted.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
+        {[
+          'Documents auto-filed under the right case',
+          'Receipt numbers routed from the USCIS inbox',
+          'Deadlines generated from rule engine',
+          'Conflicts surfaced for partner review',
+        ].map(t => (
+          <div key={t} style={{ fontSize: 13, color: '#E2E7EE', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <Icon name="check" size={16} color={T.blueSky} />
+            <span style={{ minWidth: 0 }}>{t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
   return (
-    <div id="moat" style={{ background: T.cloud, padding: '96px 32px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ maxWidth: 760, marginBottom: 56 }}>
+    <div id="moat" style={{ background: T.cloud, padding: narrow ? '64px 16px' : '96px 32px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
+        <div style={{ maxWidth: 760, marginBottom: 56, minWidth: 0 }}>
           <div className="label" style={{ color: T.blueDeep }}>The moat</div>
-          <h2 className="serif" style={{ fontSize: 52, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.08, margin: '14px 0 20px' }}>
+          <h2 className="serif" style={{ fontSize: 'clamp(28px, 6vw, 52px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.08, margin: '14px 0 20px' }}>
             Three products feed every case.<br/>
             <span style={{ fontStyle: 'italic', color: T.slate }}>Yours is the fourth.</span>
           </h2>
@@ -166,25 +283,29 @@ function MoatSection() {
         {/* Diagram */}
         <div style={{
           background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 20,
-          padding: 40, boxShadow: T.shadow.sm,
-          display: 'grid', gridTemplateColumns: '1fr 80px 1fr', alignItems: 'center', gap: 0,
+          padding: narrow ? 20 : 40, boxShadow: T.shadow.sm,
+          display: 'grid',
+          gridTemplateColumns: narrow ? '1fr' : '1fr 80px 1fr',
+          alignItems: 'center', gap: narrow ? 20 : 0,
+          minWidth: 0,
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {sources.map((s, i) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
+            {sources.map((s) => (
               <div key={s.src} style={{
                 background: T.src[s.src].bg,
                 borderLeft: `4px solid ${T.src[s.src].bar}`,
                 borderRadius: 10, padding: '16px 18px',
                 position: 'relative',
+                minWidth: 0,
               }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
                   <div style={{ fontSize: 15, fontWeight: 700, color: T.src[s.src].fg }}>{s.name}</div>
                   <div style={{ fontSize: 12, color: T.slate }}>{s.who}</div>
                 </div>
                 <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 3 }}>
                   {s.brings.map(b => (
-                    <li key={b} style={{ fontSize: 13, color: T.slate, display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ width: 4, height: 4, background: T.src[s.src].bar, borderRadius: 999 }} />
+                    <li key={b} style={{ fontSize: 13, color: T.slate, display: 'flex', gap: 8, alignItems: 'center', wordBreak: 'break-word' }}>
+                      <span style={{ width: 4, height: 4, background: T.src[s.src].bar, borderRadius: 999, flexShrink: 0 }} />
                       {b}
                     </li>
                   ))}
@@ -194,44 +315,20 @@ function MoatSection() {
           </div>
 
           {/* Arrows */}
-          <svg viewBox="0 0 80 300" style={{ width: '100%', height: 280 }}>
-            <defs>
-              <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-                <path d="M0 0 L10 5 L0 10 z" fill={T.slate} />
-              </marker>
-            </defs>
-            <path d="M0 50 Q 40 50, 40 150 Q 40 250, 80 250" fill="none" stroke={T.src.consumer.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
-            <path d="M0 150 L 80 150" fill="none" stroke={T.src.employer.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
-            <path d="M0 250 Q 40 250, 40 150 Q 40 50, 80 50" fill="none" stroke={T.src.dso.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
-          </svg>
+          {!narrow && (
+            <svg viewBox="0 0 80 300" style={{ width: '100%', height: 280, flexShrink: 0 }}>
+              <defs>
+                <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+                  <path d="M0 0 L10 5 L0 10 z" fill={T.slate} />
+                </marker>
+              </defs>
+              <path d="M0 50 Q 40 50, 40 150 Q 40 250, 80 250" fill="none" stroke={T.src.consumer.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
+              <path d="M0 150 L 80 150" fill="none" stroke={T.src.employer.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
+              <path d="M0 250 Q 40 250, 40 150 Q 40 50, 80 50" fill="none" stroke={T.src.dso.bar} strokeWidth="1.5" markerEnd="url(#arr)" />
+            </svg>
+          )}
 
-          <div style={{
-            background: T.charcoal, color: '#fff',
-            borderRadius: 14, padding: '32px 28px',
-            display: 'flex', flexDirection: 'column', gap: 12,
-            boxShadow: T.shadow.md,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <img src="assets/logo-immihub.png" alt="" style={{ height: 20, filter: 'brightness(0) invert(1)' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#A3B0C0' }}>Attorney Portal</span>
-            </div>
-            <div className="serif" style={{ fontSize: 26, lineHeight: 1.15, letterSpacing: '-0.02em', color: '#fff', margin: '6px 0 4px' }}>
-              A new matter walks in the door with the evidence already sorted.
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-              {[
-                'Documents auto-filed under the right case',
-                'Receipt numbers routed from the USCIS inbox',
-                'Deadlines generated from rule engine',
-                'Conflicts surfaced for partner review',
-              ].map(t => (
-                <div key={t} style={{ fontSize: 13, color: '#E2E7EE', display: 'flex', gap: 8 }}>
-                  <Icon name="check" size={16} color={T.blueSky} />
-                  {t}
-                </div>
-              ))}
-            </div>
-          </div>
+          {attorneyCard}
         </div>
 
         <div style={{ marginTop: 24, fontSize: 13, color: T.gray, maxWidth: 760, lineHeight: 1.6 }}>
@@ -244,6 +341,7 @@ function MoatSection() {
 
 /* ─────────────────── PRODUCT SHOWCASE ─────────────────── */
 function ProductSection() {
+  const narrow = useMediaQuery('(max-width: 900px)');
   const [tab, setTab] = useState('dash');
   const tabs = [
     { k: 'dash',  label: 'Dashboard',      desc: 'Morning triage with ImmiHub Incoming — a chronological feed of documents that arrived overnight from connected counterparties.', shot: DashboardShot, url: 'attorneys.immihub.com/dashboard' },
@@ -254,11 +352,34 @@ function ProductSection() {
   const current = tabs.find(t => t.k === tab);
   const Shot = current.shot;
 
+  const detail = (
+    <div style={{ position: narrow ? 'relative' : 'sticky', top: narrow ? undefined : 100, minWidth: 0 }}>
+      <div className="serif" style={{ fontSize: 24, fontWeight: 500, letterSpacing: '-0.02em', color: T.charcoal }}>
+        {current.label}
+      </div>
+      <div style={{ fontSize: 14, color: T.slate, lineHeight: 1.6, marginTop: 10 }}
+           dangerouslySetInnerHTML={{ __html: current.desc }} />
+      <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[
+          'Source stripes on every row',
+          'USCIS receipt-prefix validation',
+          'Deadline rule engine (14 triggers)',
+          'Conflict surfacing · partner sign-off required',
+        ].map(t => (
+          <div key={t} style={{ fontSize: 13, color: T.slate, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <Icon name="check" size={16} color={T.green} />
+            <span style={{ minWidth: 0 }}>{t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div id="product" style={{ padding: '96px 32px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ maxWidth: 760, marginBottom: 36 }}>
+    <div id="product" style={{ padding: narrow ? '64px 16px' : '96px 32px', maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
+      <div style={{ maxWidth: 760, marginBottom: 36, minWidth: 0 }}>
         <div className="label" style={{ color: T.blueDeep }}>The product</div>
-        <h2 className="serif" style={{ fontSize: 48, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
+        <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
           Built around how immigration cases <span style={{ fontStyle: 'italic', color: T.slate }}>actually move.</span>
         </h2>
         <p style={{ fontSize: 16, color: T.slate, lineHeight: 1.6 }}>
@@ -278,32 +399,20 @@ function ProductSection() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24, alignItems: 'start' }}>
-        <BrowserChrome url={current.url}>
-          <div style={{ height: 520, overflow: 'hidden' }}>
-            <Shot />
-          </div>
-        </BrowserChrome>
-        <div style={{ position: 'sticky', top: 100 }}>
-          <div className="serif" style={{ fontSize: 24, fontWeight: 500, letterSpacing: '-0.02em', color: T.charcoal }}>
-            {current.label}
-          </div>
-          <div style={{ fontSize: 14, color: T.slate, lineHeight: 1.6, marginTop: 10 }}
-               dangerouslySetInnerHTML={{ __html: current.desc }} />
-          <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              'Source stripes on every row',
-              'USCIS receipt-prefix validation',
-              'Deadline rule engine (14 triggers)',
-              'Conflict surfacing · partner sign-off required',
-            ].map(t => (
-              <div key={t} style={{ fontSize: 13, color: T.slate, display: 'flex', gap: 8 }}>
-                <Icon name="check" size={16} color={T.green} />
-                {t}
-              </div>
-            ))}
-          </div>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: narrow ? '1fr' : '1fr minmax(260px, 320px)',
+        gap: 24, alignItems: 'start', minWidth: 0,
+      }}>
+        {narrow && detail}
+        <div style={{ minWidth: 0, width: '100%' }}>
+          <BrowserChrome url={current.url}>
+            <div style={{ height: narrow ? 360 : 520, overflow: 'hidden' }}>
+              <Shot />
+            </div>
+          </BrowserChrome>
         </div>
+        {!narrow && detail}
       </div>
     </div>
   );
@@ -341,12 +450,17 @@ function ReceiptDemo() {
 
   const samples = ['EAC-24-189-45201', 'LIN-25-077-12089', 'MSC-25-104-88210', 'XYZ-23-000-00000'];
 
+  const narrow = useMediaQuery('(max-width: 900px)');
   return (
-    <div style={{ background: T.charcoal, color: '#fff', padding: '96px 32px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
-        <div>
+    <div style={{ background: T.charcoal, color: '#fff', padding: narrow ? '64px 16px' : '96px 32px' }}>
+      <div style={{
+        maxWidth: 1200, margin: '0 auto', display: 'grid',
+        gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: narrow ? 36 : 56, alignItems: 'center',
+        minWidth: 0,
+      }}>
+        <div style={{ minWidth: 0 }}>
           <div className="label" style={{ color: T.blueSky }}>Try it now</div>
-          <h2 className="serif" style={{ fontSize: 44, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
+          <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
             Paste a receipt number.<br/>
             <span style={{ fontStyle: 'italic', color: '#B7C4D1' }}>Watch it resolve.</span>
           </h2>
@@ -425,6 +539,7 @@ function DemoRow({ k, v, highlight }) {
 
 /* ─────────────────── COMPARE ─────────────────── */
 function CompareSection() {
+  const narrow = useMediaQuery('(max-width: 900px)');
   const rows = [
     ['Cases arrive with documents pre-sorted by source', 'inszoom-', 'docketwise-', 'clio-', 'mycase-', 'immihub'],
     ['Connected Employer Dashboard sharing signed I-129s / LCAs', 'inszoom-', 'docketwise-', 'clio-', 'mycase-', 'immihub'],
@@ -451,10 +566,10 @@ function CompareSection() {
     return <Icon name="x" size={16} color={T.grayLight} />;
   };
   return (
-    <div id="compare" style={{ padding: '96px 32px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ maxWidth: 760, marginBottom: 32 }}>
+    <div id="compare" style={{ padding: narrow ? '64px 16px' : '96px 32px', maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
+      <div style={{ maxWidth: 760, marginBottom: 32, minWidth: 0 }}>
         <div className="label" style={{ color: T.blueDeep }}>Compare</div>
-        <h2 className="serif" style={{ fontSize: 48, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
+        <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
           Other tools manage cases.<br/>
           <span style={{ fontStyle: 'italic', color: T.slate }}>We sort them before they arrive.</span>
         </h2>
@@ -463,8 +578,15 @@ function CompareSection() {
         </p>
       </div>
 
-      <div style={{ background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 16, overflow: 'hidden', boxShadow: T.shadow.sm }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr repeat(5, 1fr)', alignItems: 'center' }}>
+      <div style={{
+        background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 16,
+        overflowX: 'auto', WebkitOverflowScrolling: 'touch', boxShadow: T.shadow.sm,
+        maxWidth: '100%',
+      }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: '2fr repeat(5, minmax(72px, 1fr))', alignItems: 'center',
+          minWidth: narrow ? 720 : undefined,
+        }}>
           {cols.map((c, i) => (
             <div key={c.k} style={{
               padding: i === 0 ? '18px 20px' : '18px 0',
@@ -506,6 +628,7 @@ function CompareSection() {
 /* ─────────────────── PRICING (tier-aware) ─────────────────── */
 function PricingSection({ firmTier, setFirmTier, accent }) {
   const A = accentColor(accent);
+  const narrow = useMediaQuery('(max-width: 900px)');
   const tiers = [
     {
       k: 'solo',
@@ -558,11 +681,11 @@ function PricingSection({ firmTier, setFirmTier, accent }) {
   ];
 
   return (
-    <div id="pricing" style={{ background: T.cloud, padding: '96px 32px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ maxWidth: 760, marginBottom: 36 }}>
+    <div id="pricing" style={{ background: T.cloud, padding: narrow ? '64px 16px' : '96px 32px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
+        <div style={{ maxWidth: 760, marginBottom: 36, minWidth: 0 }}>
           <div className="label" style={{ color: T.blueDeep }}>Pricing</div>
-          <h2 className="serif" style={{ fontSize: 48, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
+          <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
             Founding-firm pricing, <span style={{ fontStyle: 'italic', color: T.slate }}>locked for two years.</span>
           </h2>
           <p style={{ fontSize: 16, color: T.slate, lineHeight: 1.6 }}>
@@ -570,7 +693,7 @@ function PricingSection({ firmTier, setFirmTier, accent }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : 'repeat(3, 1fr)', gap: 16, minWidth: 0 }}>
           {tiers.map(t => {
             const isActive = firmTier === t.k;
             return (
@@ -632,6 +755,7 @@ function PricingSection({ firmTier, setFirmTier, accent }) {
 
 /* ─────────────────── SECURITY + COMPLIANCE ─────────────────── */
 function SecuritySection() {
+  const narrow = useMediaQuery('(max-width: 900px)');
   const items = [
     { icon: 'shield', t: 'Privilege-aware by design', d: 'Attorney work product carries a privileged flag on every document and audit-log event. Role-based access enforces who can see what.' },
     { icon: 'scale',  t: 'IOLTA trust accounting',     d: 'Per-matter trust balances segregated in line with state IOLTA rules. Automatic flagging when a retainer goes negative.' },
@@ -641,22 +765,26 @@ function SecuritySection() {
     { icon: 'check',  t: 'No data sold. Ever.',        d: 'Beneficiaries own their documents. Firms own their matters. We are paid by firms, not by selling data to third parties.' },
   ];
   return (
-    <div id="security" style={{ padding: '96px 32px', maxWidth: 1200, margin: '0 auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 56, alignItems: 'start' }}>
-        <div style={{ position: 'sticky', top: 100 }}>
+    <div id="security" style={{ padding: narrow ? '64px 16px' : '96px 32px', maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: narrow ? '1fr' : '1fr 2fr',
+        gap: narrow ? 32 : 56, alignItems: 'start', minWidth: 0,
+      }}>
+        <div style={{ position: narrow ? 'relative' : 'sticky', top: narrow ? undefined : 100, minWidth: 0 }}>
           <div className="label" style={{ color: T.blueDeep }}>Security &amp; compliance</div>
-          <h2 className="serif" style={{ fontSize: 44, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
+          <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px' }}>
             The ethics rules <span style={{ fontStyle: 'italic', color: T.slate }}>are the product.</span>
           </h2>
           <p style={{ fontSize: 15, color: T.slate, lineHeight: 1.6 }}>
             ImmiHub is software built by immigration attorneys. The model rules aren't a feature spec — they're the boundary condition. When something requires partner judgment, the product asks for it.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: 20, minWidth: 0 }}>
           {items.map(it => (
             <div key={it.t} style={{
               background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 14,
-              padding: 24,
+              padding: 24, minWidth: 0,
             }}>
               <div style={{
                 width: 38, height: 38, borderRadius: 10,
@@ -697,11 +825,12 @@ function FaqSection() {
       a: 'Early access in order of signup, 12 months free during beta, 24 months at founding-firm rates, and a standing spot in our monthly feedback call with the product team. Founding firms shape what ships.' },
   ];
   const [open, setOpen] = useState(0);
+  const narrow = useMediaQuery('(max-width: 900px)');
   return (
-    <div id="faq" style={{ background: T.cloud, padding: '96px 32px' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+    <div id="faq" style={{ background: T.cloud, padding: narrow ? '64px 16px' : '96px 32px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', width: '100%', minWidth: 0, padding: 0 }}>
         <div className="label" style={{ color: T.blueDeep, textAlign: 'center' }}>FAQ</div>
-        <h2 className="serif" style={{ fontSize: 44, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 36px', textAlign: 'center' }}>
+        <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 500, color: T.charcoal, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 36px', textAlign: 'center' }}>
           Answers for skeptical attorneys.
         </h2>
         <div style={{ background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 16, overflow: 'hidden' }}>
@@ -709,10 +838,10 @@ function FaqSection() {
             <div key={i} style={{ borderBottom: i < items.length - 1 ? `1px solid ${T.mist}` : 'none' }}>
               <button onClick={() => setOpen(open === i ? -1 : i)} style={{
                 width: '100%', textAlign: 'left', background: 'transparent', border: 'none',
-                padding: '20px 28px', cursor: 'pointer',
+                padding: narrow ? '16px 18px' : '20px 28px', cursor: 'pointer',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
               }}>
-                <span className="serif" style={{ fontSize: 17, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.01em' }}>{it.q}</span>
+                <span className="serif" style={{ fontSize: narrow ? 15 : 17, fontWeight: 500, color: T.charcoal, letterSpacing: '-0.01em', textAlign: 'left', minWidth: 0 }}>{it.q}</span>
                 <span style={{
                   width: 28, height: 28, borderRadius: 999,
                   background: open === i ? T.charcoal : T.cloud,
@@ -722,7 +851,7 @@ function FaqSection() {
                 }}>{open === i ? '–' : '+'}</span>
               </button>
               {open === i && (
-                <div style={{ padding: '0 28px 22px', fontSize: 14.5, color: T.slate, lineHeight: 1.65 }}>
+                <div style={{ padding: narrow ? '0 18px 18px' : '0 28px 22px', fontSize: 14.5, color: T.slate, lineHeight: 1.65 }}>
                   {it.a}
                 </div>
               )}
@@ -737,6 +866,7 @@ function FaqSection() {
 /* ─────────────────── WAITLIST ─────────────────── */
 function WaitlistSection({ accent }) {
   const A = accentColor(accent);
+  const narrow = useMediaQuery('(max-width: 900px)');
   const [form, setForm] = useState({ name: '', email: '', firm: '', size: 'boutique', role: 'partner' });
   const [submitted, setSubmitted] = useState(false);
   const submit = (e) => { e.preventDefault(); setSubmitted(true); };
@@ -755,18 +885,18 @@ function WaitlistSection({ accent }) {
   );
 
   return (
-    <div id="waitlist" style={{ padding: '96px 32px 120px', maxWidth: 1200, margin: '0 auto' }}>
+    <div id="waitlist" style={{ padding: narrow ? '64px 16px 80px' : '96px 32px 120px', maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
       <div style={{
         background: T.charcoal, color: '#fff',
-        borderRadius: 24, padding: '56px 56px',
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48,
+        borderRadius: 24, padding: narrow ? '28px 20px' : '56px 56px',
+        display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: narrow ? 32 : 48,
         position: 'relative', overflow: 'hidden',
       }}>
         {/* subtle source stripes as decorative bleed */}
         <div style={{ position: 'absolute', top: 0, right: 0, width: 12, height: '100%', background: `linear-gradient(180deg, ${T.src.consumer.bar} 0%, ${T.src.consumer.bar} 33%, ${T.src.employer.bar} 33%, ${T.src.employer.bar} 66%, ${T.src.dso.bar} 66%, ${T.src.dso.bar} 100%)` }} />
         <div>
           <div className="label" style={{ color: T.blueSky }}>Join the waitlist</div>
-          <h2 className="serif" style={{ fontSize: 42, fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px', color: '#fff' }}>
+          <h2 className="serif" style={{ fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1.1, margin: '14px 0 16px', color: '#fff' }}>
             Founding firms <span style={{ fontStyle: 'italic', color: '#B7C4D1' }}>shape what ships.</span>
           </h2>
           <p style={{ fontSize: 15, color: '#B7C4D1', lineHeight: 1.6 }}>
@@ -787,7 +917,7 @@ function WaitlistSection({ accent }) {
           </div>
         </div>
 
-        <div style={{ background: '#fff', color: T.charcoal, borderRadius: 16, padding: 32 }}>
+        <div style={{ background: '#fff', color: T.charcoal, borderRadius: 16, padding: narrow ? 22 : 32, minWidth: 0 }}>
           {submitted ? (
             <div style={{ padding: '40px 0', textAlign: 'center' }}>
               <div style={{ width: 56, height: 56, margin: '0 auto 16px', borderRadius: 999, background: T.mint, color: '#1F7A4E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -804,7 +934,7 @@ function WaitlistSection({ accent }) {
               {field('name', 'Full name', { required: true })}
               {field('email', 'Work email', { type: 'email', required: true })}
               {field('firm', 'Firm name', { required: true })}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: narrow ? '1fr' : '1fr 1fr', gap: 10 }}>
                 <select value={form.size} onChange={e => setForm(f => ({ ...f, size: e.target.value }))} style={{
                   padding: '12px 14px', background: '#fff', border: `1px solid ${T.mist}`, borderRadius: 10,
                   fontSize: 14, color: T.charcoal, fontFamily: 'inherit',
@@ -842,6 +972,7 @@ function WaitlistSection({ accent }) {
 
 /* ─────────────────── FOOTER ─────────────────── */
 function Footer() {
+  const narrow = useMediaQuery('(max-width: 900px)');
   const groups = [
     { t: 'Product', links: ['The moat', 'Dashboard', 'RFE workspace', 'Cases', 'USCIS inbox', 'Pricing'] },
     { t: 'Platform', links: ['Consumer app', 'Employer Dashboard', 'DSO Portal', 'Attorney Portal'] },
@@ -849,10 +980,14 @@ function Footer() {
     { t: 'Legal', links: ['Privacy', 'Terms', 'Security', 'DPA'] },
   ];
   return (
-    <div style={{ borderTop: `1px solid ${T.mist}`, background: T.warmWhite, padding: '56px 32px 32px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div style={{ borderTop: `1px solid ${T.mist}`, background: T.warmWhite, padding: narrow ? '40px 16px 28px' : '56px 32px 32px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', minWidth: 0 }}>
         <ImmiHubOSFamily homeHref="../../index.html" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr repeat(4, 1fr)', gap: 32 }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: narrow ? '1fr' : '1.4fr repeat(4, 1fr)',
+          gap: narrow ? 28 : 32,
+        }}>
           <div>
             <img src="assets/logo-immihub.png" alt="ImmiHub" style={{ height: 24 }} />
             <div style={{ fontSize: 13, color: T.slate, marginTop: 14, lineHeight: 1.6, maxWidth: 280 }}>

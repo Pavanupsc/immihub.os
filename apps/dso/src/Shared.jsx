@@ -39,11 +39,17 @@ function Logo({ link = true }) {
 // ---------- Nav ----------
 function Nav({ active = 'product' }) {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth > 900) setMenuOpen(false); };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
   const links = [
     { id: 'product', label: 'Product', href: 'index.html' },
@@ -61,6 +67,27 @@ function Nav({ active = 'product' }) {
             <a key={l.id} href={l.href} className={`nav-link ${active === l.id ? 'active' : ''}`}>{l.label}</a>
           ))}
         </nav>
+        <button
+          type="button"
+          className="nav-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="dso-nav-drawer"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen(o => !o)}
+        >
+          {menuOpen ? '×' : '☰'}
+        </button>
+        <div id="dso-nav-drawer" className={`nav-drawer${menuOpen ? ' is-open' : ''}`}>
+          {links.map(l => (
+            <a
+              key={l.id}
+              href={l.href}
+              className={`nav-link ${active === l.id ? 'active' : ''}`}
+              onClick={() => setMenuOpen(false)}
+            >{l.label}</a>
+          ))}
+          <a className="btn btn-primary btn-sm" href="#waitlist" onClick={() => setMenuOpen(false)}>Join the waitlist</a>
+        </div>
         <div className="nav-right">
           <a className="btn btn-primary btn-sm" href="#waitlist">Join the waitlist</a>
         </div>

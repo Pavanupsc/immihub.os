@@ -65,6 +65,51 @@ body { overflow-x: hidden; }
   display: flex;
   align-items: center;
   gap: 36px;
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+.nav-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  font-size: 20px;
+  color: var(--fg-1);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.nav-menu-toggle:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.nav-drawer {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+.nav-drawer a {
+  display: block;
+  padding: 12px 10px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fg-1);
+  text-decoration: none;
+}
+.nav-drawer a:hover { background: var(--im-blue-ice); color: var(--im-blue-deep); }
+.nav-drawer .btn { width: 100%; margin-top: 8px; justify-content: center; }
+.dso-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 56px;
+  align-items: center;
+  min-width: 0;
 }
 .nav-logo {
   display: flex;
@@ -214,6 +259,7 @@ body { overflow-x: hidden; }
   box-shadow: 0 24px 60px -20px rgba(26,35,50,0.18), 0 4px 12px rgba(26,35,50,0.05);
   overflow: hidden;
 }
+#product-glimpse .product-shot--tall { min-height: 600px; }
 
 /* ---------- Stat band ---------- */
 .stat-band {
@@ -934,7 +980,21 @@ body { overflow-x: hidden; }
   .form-grid { grid-template-columns: 1fr; }
   .benefits ul { grid-template-columns: 1fr; }
   .nav-links { display: none; }
-  .nav-right .nav-cross { display: none; }
+  .nav-right { display: none; }
+  .nav-menu-toggle { display: inline-flex; }
+  .nav-drawer.is-open { display: flex; flex-basis: 100%; }
+  .nav-inner { padding: 12px 20px; }
+  .nav-inner .nav-logo-stacked,
+  .nav-inner > a:first-child { flex: 1; min-width: 0; }
   .section { padding: 64px 0; }
   .not-item { grid-template-columns: 1fr; gap: 8px; }
+  .dso-hero-grid { grid-template-columns: 1fr; gap: 36px; }
+  #product-glimpse .product-shot--tall { min-height: 420px; }
+}
+@media (max-width: 640px) {
+  :root { --gutter: 20px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .form-card { padding: 28px 20px; }
+  .not-card { padding: 28px 22px; }
+  .not-card h2 { font-size: 28px; }
 }
